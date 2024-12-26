@@ -1,0 +1,83 @@
+import sqlite3
+import os
+
+class SingletonDatabaseFactory:
+    """A Singleton class to manage SQLite database connection and removal."""
+    __instance = None  # Singleton instance
+    __connection = None  # Singleton connection
+
+    def __new__(cls, db_name=None):
+        """
+        Ensures only one instance of the class is created.
+        """
+        if cls.__instance is None:
+            
+            cls.__instance = super(SingletonDatabaseFactory, cls).__new__(cls)
+            
+            cls.__instance.db_name = db_name
+            
+        return cls.__instance
+
+    def create_connection(self):
+        """
+        Creates or returns the existing SQLite database connection.
+        """
+        if self.__connection is None:
+            try:
+                if self.db_name is None:
+                    raise ValueError("Database name must be provided to create a connection.")
+                self.__connection = sqlite3.connect(self.db_name)
+                print(f"Database '{self.db_name}' connected successfully.")
+            except sqlite3.Error as e:
+                print(f"Error connecting to database: {e}")
+        return self.__connection
+
+    def remove_database(self):
+        """
+        Removes the SQLite database file from the filesystem.
+        """
+        if self.db_name and os.path.exists(self.db_name):
+            print(self.db_name)
+            self.__connection = None  # Ensure connection is released
+            os.remove(self.db_name)
+            print(f"Database '{self.db_name}' removed successfully.")
+        else:
+            print(f"Database '{self.db_name}' does not exist or has not been initialized.")
+
+    def close_connection(self):
+        """
+        Closes the SQLite database connection.
+        """
+        if self.__connection:
+            self.__connection.close()
+            self.__connection = None
+            print("Database connection closed.")
+
+# Example usage of the Singleton Database Factory
+if __name__ == "__main__":
+    # Define database name
+    db_name = "singleton_factory_method.db"
+
+    # Create the Singleton instance
+    db_factory = SingletonDatabaseFactory(db_name)
+
+    # Create or get the database connection
+    connection = db_factory.create_connection()
+    
+    if connection:
+        # Example: Create a table
+        cursor = connection.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL
+            )
+        ''')
+        print("Table 'users' created successfully.")
+    
+    # Close the connection
+    db_factory.close_connection()
+
+    # Remove the database
+    db_factory.remove_database()

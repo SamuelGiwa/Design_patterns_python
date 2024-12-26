@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Alice",
+        "age": 25,
+        "university": "Harvard University",
+        "degree": "Computer Science"
+    },
+    {
+        "name": "Bob",
+        "age": 30,
+        "university": "MIT",
+        "degree": "Physics"
+    }
+]
